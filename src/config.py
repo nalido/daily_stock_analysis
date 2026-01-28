@@ -304,7 +304,7 @@ class Config:
             bocha_api_keys=bocha_api_keys,
             tavily_api_keys=tavily_api_keys,
             serpapi_keys=serpapi_keys,
-            wechat_webhook_url=os.getenv('WECHAT_WEBHOOK_URL'),
+            wechat_webhook_url=os.getenv('WECOM_WEBHOOK_URL'),
             feishu_webhook_url=os.getenv('FEISHU_WEBHOOK_URL'),
             telegram_bot_token=os.getenv('TELEGRAM_BOT_TOKEN'),
             telegram_chat_id=os.getenv('TELEGRAM_CHAT_ID'),

@@ -1,9 +1,9 @@
-name: 每日股票分析-A股
+name: 每日股票分析-美股
 
 on:
-  # 定时触发 - 每天北京时间 18:10 (UTC 10:10)
+  # 定时触发 - 每天北京时间 07:10 (UTC 23:10)
   schedule:
-    - cron: '10 10 * * 1-5'     # 周一到周五，UTC 10:10 = 北京时间 18:10
+    - cron: '10 23 * * 0-4'     # 周日到周四，UTC 23:10 = 北京时间次日 07:10
   
   # 手动触发
   workflow_dispatch:
@@ -20,7 +20,7 @@ on:
 
 # 并发控制：同一时间只运行一个分析任务
 concurrency:
-  group: stock-analysis
+  group: stock-analysis-us
   cancel-in-progress: false
 
 jobs:
@@ -53,7 +53,7 @@ jobs:
           # ==========================================
           # AI 配置
           # ==========================================
-          # OpenAI 兼容 API（备选）
+          # OpenAI 兼容 API（DeepSeek）
           OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           OPENAI_BASE_URL: ${{ vars.DEEPSEEK_BASE_URL || secrets.DEEPSEEK_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1' }}
           OPENAI_MODEL: ${{ vars.DEEPSEEK_MODEL || secrets.DEEPSEEK_MODEL || 'deepseek-r1' }}
@@ -73,39 +73,21 @@ jobs:
           # ==========================================
           # 通知渠道（可同时配置多个，全部推送）
           # ==========================================
-          
-          # 方式一：企业微信 Webhook
           WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
-          
-          # 方式二：飞书 Webhook
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
-          
-          # 方式三：Telegram
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          
-          # 方式四：邮件
           EMAIL_SENDER: ${{ vars.EMAIL_SENDER || secrets.EMAIL_SENDER }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_RECEIVERS: ${{ vars.EMAIL_RECEIVERS || secrets.EMAIL_RECEIVERS }}
-          
-          # 方式五：Pushover
           PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
           PUSHOVER_API_TOKEN: ${{ secrets.PUSHOVER_API_TOKEN }}
-          
-          # 方式六：PushPlus ⬅️ 新增！
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-          
-          # 方式七：自定义 Webhook（钉钉、Bark、自建服务等）
           CUSTOM_WEBHOOK_URLS: ${{ secrets.CUSTOM_WEBHOOK_URLS }}
           CUSTOM_WEBHOOK_BEARER_TOKEN: ${{ secrets.CUSTOM_WEBHOOK_BEARER_TOKEN }}
-          
-          # 方式八：Discord
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_MAIN_CHANNEL_ID: ${{ secrets.DISCORD_MAIN_CHANNEL_ID }}
-          
-          # 方式九：飞书云文档
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
           FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
           FEISHU_FOLDER_TOKEN: ${{ secrets.FEISHU_FOLDER_TOKEN }}
@@ -113,14 +95,14 @@ jobs:
           # ==========================================
           # 自选股配置
           # ==========================================
-          STOCK_LIST: ${{ vars.STOCK_LIST || secrets.STOCK_LIST || '002415,159770,300753,512660,600036,601398,601988,603883' }}
+          STOCK_LIST: ${{ vars.STOCK_LIST_US || secrets.STOCK_LIST_US || 'BABA,CROX,DEO,DJT,FIG,GLD,GOOGL,JD,MCY,NVDA,NVO,OXY,PDD,RACE,TSLA,UNH' }}
           
           # ==========================================
-          # 运行配置 ⬅️ 新增！
+          # 运行配置
           # ==========================================
           REPORT_TYPE: ${{ vars.REPORT_TYPE || secrets.REPORT_TYPE || 'full' }}
           SINGLE_STOCK_NOTIFY: ${{ vars.SINGLE_STOCK_NOTIFY || secrets.SINGLE_STOCK_NOTIFY || 'false' }}
-          MARKET_REVIEW_ENABLED: ${{ vars.MARKET_REVIEW_ENABLED || secrets.MARKET_REVIEW_ENABLED || 'true' }}
+          MARKET_REVIEW_ENABLED: ${{ vars.MARKET_REVIEW_ENABLED || secrets.MARKET_REVIEW_ENABLED || 'false' }}
           ANALYSIS_DELAY: ${{ vars.ANALYSIS_DELAY || secrets.ANALYSIS_DELAY || '0' }}
           
           # ==========================================
@@ -128,15 +110,13 @@ jobs:
           # ==========================================
           LOG_LEVEL: INFO
           MAX_WORKERS: 3
-          # GitHub Actions 环境建议关闭不稳定的数据源
           ENABLE_CHIP_DISTRIBUTION: 'false'
           
         run: |
-          # 判断运行模式
           MODE="${{ github.event.inputs.mode || 'full' }}"
           
           echo "=========================================="
-          echo "🚀 A股自选股智能分析系统"
+          echo "🚀 美股自选股智能分析系统"
           echo "=========================================="
           echo "⏰ 时间: $(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')"
           echo "🎯 运行模式: $MODE"
@@ -155,14 +135,13 @@ jobs:
           echo ""
           echo "【通知渠道】"
           echo "  PushPlus: $([ -n "$PUSHPLUS_TOKEN" ] && echo '✅ 已配置' || echo '⚪ 未配置')"
-          echo "  企业微信: $([ -n "$WECHAT_WEBHOOK_URL" ] && echo '✅ 已配置' || echo '⚪ 未配置')"
+          echo "  企业微信: $([ -n "$WECOM_WEBHOOK_URL" ] && echo '✅ 已配置' || echo '⚪ 未配置')"
           echo "  飞书: $([ -n "$FEISHU_WEBHOOK_URL" ] && echo '✅ 已配置' || echo '⚪ 未配置')"
           echo "  Telegram: $([ -n "$TELEGRAM_BOT_TOKEN" ] && echo '✅ 已配置' || echo '⚪ 未配置')"
           echo "  Discord: $([ -n "$DISCORD_WEBHOOK_URL" ] && echo '✅ 已配置' || echo '⚪ 未配置')"
           echo "=========================================="
           echo ""
           
-          # 执行分析
           if [ "$MODE" = "market-only" ]; then
             python main.py --market-review
           elif [ "$MODE" = "stocks-only" ]; then
@@ -175,7 +154,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: analysis-reports-${{ github.run_number }}
+          name: analysis-reports-us-${{ github.run_number }}
           path: |
             reports/
             logs/
