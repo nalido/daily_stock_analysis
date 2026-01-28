@@ -46,7 +46,7 @@ jobs:
       
       - name: 创建必要目录
         run: |
-          mkdir -p data logs reports
+          mkdir -p data logs src/reports
       
       - name: 执行股票分析
         env:
@@ -156,7 +156,7 @@ jobs:
         with:
           name: analysis-reports-us-${{ github.run_number }}
           path: |
-            reports/
+            src/reports/
             logs/
           retention-days: 30
       
@@ -167,9 +167,9 @@ jobs:
           echo "=========================================="
           echo "📊 分析完成"
           echo "=========================================="
-          if [ -d "reports" ] && [ "$(ls -A reports 2>/dev/null)" ]; then
+          if [ -d "src/reports" ] && [ "$(ls -A src/reports 2>/dev/null)" ]; then
             echo "生成的报告:"
-            ls -la reports/
+            ls -la src/reports/
           else
             echo "⚠️ 未生成报告文件"
           fi
